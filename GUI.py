@@ -10,13 +10,22 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import *
 from tkinter.messagebox import showinfo
+import MACCOR_Process as pro
+import matplotlib
+
+matplotlib.use('TkAgg')
+
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg,
+    NavigationToolbar2Tk)
 
 
 root = tk.Tk()
 root.title('Echem Plotter')
-root.geometry('800x600')
+root.geometry('300x200')
 
-def browsefile():
+def browseandplot():
     
     selectfile = fd.askopenfilename(title='Open file', initialdir='/',\
                                     filetype=(('Excel files',('.*xlsx','*.xls')),\
@@ -24,15 +33,30 @@ def browsefile():
     label = Label(root,text=f'Currnet File: {selectfile}')
     label.pack(anchor=tk.N)
     
-browse_button = ttk.Button(root,text='Browser',command=browsefile)
+    actmass= tk.simpledialog.askfloat('ATTENTION','Enter active mass g: \t\t    ') #Do not delete spaces
+    
+    process = pro.main(selectfile,actmass)
+    
+    plot = pro.plot_echem(process)
+    
+    # creating the Tkinter canvas
+    # containing the Matplotlib figure
+    canvas = FigureCanvasTkAgg(plot,root)
+    
+    # placing the canvas on the Tkinter window
+    
+    #canvas.get_tk_widget().pack(side=tk.BOTTOM,expand=True)
+  
+    # creating the Matplotlib toolbar
+    toolbar = NavigationToolbar2Tk(canvas,root)
+    toolbar.update()
+  
+    # placing the toolbar on the Tkinter window
+    canvas.get_tk_widget(expand=True).pack()
+    
+
+browse_button = ttk.Button(root,text='Browse & Plot',command=browseandplot)
 browse_button.pack(expand=True)
-
-
-
-
-
-
-
 
 
 
