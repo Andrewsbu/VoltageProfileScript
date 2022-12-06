@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# In[56]:
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -83,29 +79,28 @@ def echem_proc (spec_cap_data):
     return [[capcharlst,volcharlst],[capdislst,voldislst]]
 
 #%% PLOTTING
-def plot_echem(data):
-    fig,(ax1,ax2) = plt.subplots(1,2,figsize=(14,5),dpi=100)
-    charge = data[0]
-    discharge = data[1]
+def plot_echem(data): # Data = the processed data from earlier script functions
+    fig,(ax1,ax2) = plt.subplots(1,2,figsize=(14,5),dpi=100) #Creating the figure parameters
+    charge = data[0] # Charge voltage & capacity data
+    discharge = data[1] # Disharge voltage & capacity data
+    
+    #%% Voltage Profile:
     
     #Charge Plot
-    for cap,vol in zip(charge[0],charge[1]):
-        ax1.plot(cap,vol,'r',lw=0.6)
+    for cap,vol in zip(charge[0],charge[1]): #cap = capacity, vol = voltage
+        ax1.plot(cap,vol,'r',lw=0.75)
         
     #Discharge Plot
     for cap,vol in zip(discharge[0],discharge[1]):
-        ax1.plot(cap,vol,'b',lw=0.6)
+        ax1.plot(cap,vol,'b',lw=0.75)
         
     ax1.set_xlabel('Specific Capacity (mAh g$^{-1}$)',fontsize=16)
     ax1.set_ylabel('Voltage (V)',fontsize=16)
     ax1.tick_params(axis='both',labelsize=14)
     ax1.margins(x=0,y=0)
     ax1.yaxis.set_major_locator(ticker.MultipleLocator(0.25))
-    
-    #Capacity versus Cycle Number Plot w/ Coulombic Efficiency
-    
-    
-    # Capcity vs Cycle Number:
+      
+    #%% Capcity vs Cycle Number:
     
     cycnum = len(data[0][0])+1
     endcaplst = []
@@ -119,10 +114,10 @@ def plot_echem(data):
     ax2.set_ylabel('Specific Capacity (mAh g$^{-1}$)',fontsize=16)
     ax2.tick_params(axis='both',labelsize=14)
     ax2.margins(x=0,y=0)
-    ax2.set_ylim(min(endcaplst)-100,max(endcaplst)+25)
-    ax2.xaxis.set_major_locator(ticker.MultipleLocator(10))
+    #ax2.set_ylim(min(endcaplst),max(endcaplst)+25) #Add some headroom to the plot
+    #ax2.xaxis.set_major_locator(ticker.MultipleLocator(5)) #Too specific for the variety of data this script can plot
     
-    #Coulombic Efficiency
+    #%% Coulombic Efficiency:
     
     #Capacity Data
     charcaps = data[0][0]
@@ -132,12 +127,15 @@ def plot_echem(data):
     cou_eff = []
     
     for ccap,dcap in zip(charcaps,discharcaps):
-        cou_eff.append((dcap[-1]/ccap[-1])*100)
+        cou_eff.append((dcap[-1]/ccap[-1])*100) #appending Coulombic Efficiency calaculation
     
     ax3 = ax2.twinx()
     
     ax3.plot(range(1,cycnum),cou_eff,'k.',ms=10,label="Coulomb. Eff.")
     ax3.set_ylabel('Coulombic Efficiency (%)',fontsize=16)
     ax3.tick_params(axis='both',labelsize=14)
-    ax3.set_ylim(0,100)
+    if max(cou_eff) > 100:
+        ax3.set_ylim(0,max(cou_eff))
+    else:
+        ax3.set_ylim(0,100)
 
