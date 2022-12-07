@@ -6,12 +6,10 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 def main(gui_file,actmass):
-    #actmass = input('Active Mass: ')
     data = open_file(gui_file) #Opens file from GUI.py
-    calcdata = spec_cap(actmass,data[0,:]) #Converts MACCOR capacity to specific capacity
+    calcdata = spec_cap(actmass,data[0,:]) #Converts MACCOR capacity to specific capacity (mAh/g)
     adjusted_cap_data = replace_cap(data,calcdata) #Relplaces MACCOR capcicty with calculated specific capacity
     final_data = echem_proc(adjusted_cap_data) #Organizes into (dis)charge voltage and capacity by cycle 
-    #vprof = plot_echem(final_data) #Plots data in various ways.
     
     return final_data
 
@@ -79,20 +77,49 @@ def echem_proc (spec_cap_data):
     return [[capcharlst,volcharlst],[capdislst,voldislst]]
 
 #%% PLOTTING
+
+# Color gradients help discern direction of charge and discharge in the voltage profile
+def hex_to_RGB(hex_str):
+    """ #FFFFFF -> [255,255,255]"""
+    #Pass 16 to the integer function for change of base
+    return [int(hex_str[i:i+2], 16) for i in range(1,6,2)]
+
+blue ='#0000FF'
+cyan ='#00FFFF'
+red = '#FA0000'
+magenta = '#FF00FF'
+
+
+def get_color_gradient(c1, c2, n):
+    """
+    Given two hex colors, returns a color gradient
+    with n colors.
+    """
+    assert n > 1
+    c1_rgb = np.array(hex_to_RGB(c1))/255
+    c2_rgb = np.array(hex_to_RGB(c2))/255
+    mix_pcts = [x/(n-1) for x in range(n)]
+    rgb_colors = [((1-mix)*c1_rgb + (mix*c2_rgb)) for mix in mix_pcts]
+    return ["#" + "".join([format(int(round(val*255)), "02x") for val in item]) for item in rgb_colors]
+
+#%% Figure Parameters
+
 def plot_echem(data): # Data = the processed data from earlier script functions
     fig,(ax1,ax2) = plt.subplots(1,2,figsize=(14,5),dpi=100) #Creating the figure parameters
     charge = data[0] # Charge voltage & capacity data
+    char_color = get_color_gradient(red, magenta, len(charge[0]))
     discharge = data[1] # Disharge voltage & capacity data
+    dis_color = get_color_gradient(blue, cyan, len(discharge[0]))
     
-    #%% Voltage Profile:
+#%% Voltage Profile:
     
     #Charge Plot
-    for cap,vol in zip(charge[0],charge[1]): #cap = capacity, vol = voltage
-        ax1.plot(cap,vol,'r',lw=0.75)
+    for cap,vol,cc in zip(charge[0],charge[1],char_color): #cap = capacity, vol = voltage
+        ax1.plot(cap,vol,color=cc,lw=0.75)
         
     #Discharge Plot
-    for cap,vol in zip(discharge[0],discharge[1]):
-        ax1.plot(cap,vol,'b',lw=0.75)
+    for cap,vol,dc in zip(discharge[0],discharge[1],dis_color):
+        ax1.plot(cap,vol,color=dc,lw=0.75)
         
     ax1.set_xlabel('Specific Capacity (mAh g$^{-1}$)',fontsize=16)
     ax1.set_ylabel('Voltage (V)',fontsize=16)
@@ -100,7 +127,7 @@ def plot_echem(data): # Data = the processed data from earlier script functions
     ax1.margins(x=0,y=0)
     ax1.yaxis.set_major_locator(ticker.MultipleLocator(0.25))
       
-    #%% Capcity vs Cycle Number:
+#%% Capcity vs Cycle Number:
     
     cycnum = len(data[0][0])+1
     endcaplst = []
@@ -115,9 +142,9 @@ def plot_echem(data): # Data = the processed data from earlier script functions
     ax2.tick_params(axis='both',labelsize=14)
     ax2.margins(x=0,y=0)
     #ax2.set_ylim(min(endcaplst),max(endcaplst)+25) #Add some headroom to the plot
-    #ax2.xaxis.set_major_locator(ticker.MultipleLocator(5)) #Too specific for the variety of data this script can plot
+    #ax2.xaxis.set_major_locator(ticker.MultipleLocator(5)) #Other specifc parameters
     
-    #%% Coulombic Efficiency:
+#%% Coulombic Efficiency:
     
     #Capacity Data
     charcaps = data[0][0]
@@ -138,4 +165,3 @@ def plot_echem(data): # Data = the processed data from earlier script functions
         ax3.set_ylim(0,max(cou_eff))
     else:
         ax3.set_ylim(0,100)
-
