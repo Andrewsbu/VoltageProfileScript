@@ -45,7 +45,6 @@ def browseandplot(): #Simple function that uses the MACCOR_Process script to pro
   
     # placing the toolbar on the Tkinter window
     #canvas.get_tk_widget().pack()
-    
 
 browse_button = ttk.Button(root,text='Browse & Plot',command=browseandplot)
 browse_button.pack(expand=True)

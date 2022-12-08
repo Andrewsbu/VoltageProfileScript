@@ -165,3 +165,5 @@ def plot_echem(data): # Data = the processed data from earlier script functions
         ax3.set_ylim(0,max(cou_eff))
     else:
         ax3.set_ylim(0,100)
+    
+    fig.legend(loc=3, bbox_to_anchor=(0,0), bbox_transform=ax2.transAxes)
